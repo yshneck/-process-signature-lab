@@ -1,0 +1,6 @@
+{
+  "ui": "0.2.1",
+  "engine": "0.2.1",
+  "schema": "process-signature-lab/0.2.1",
+  "expected_feature_count": 141
+}

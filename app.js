@@ -1,3 +1,4 @@
+const UI_VERSION="0.2.1", ENGINE_VERSION="0.2.1", SCHEMA_VERSION="process-signature-lab/0.2.1";
 const $=id=>document.getElementById(id);let bitmap=null,lastResult=null;
 const mean=a=>{let s=0;for(const x of a)s+=x;return a.length?s/a.length:NaN};
 function variance(a,m=mean(a)){let s=0;for(const x of a){let d=x-m;s+=d*d}return a.length?s/a.length:NaN}
@@ -9,7 +10,8 @@ function fmt(x){return Number.isFinite(x)?(Math.abs(x)>=100?x.toFixed(1):x.toFix
 function addMom(out,p,a){let m=moments(a);for(const k in m)out[`${p}.${k}`]=m[k];out[`${p}.q10`]=quant(a,.1);out[`${p}.q50`]=quant(a,.5);out[`${p}.q90`]=quant(a,.9)}
 function sample(arr,step=8){let o=[];for(let i=0;i<arr.length;i+=step)o.push(arr[i]);return o}
 $('file').onchange=async e=>{let f=e.target.files[0];if(!f)return;bitmap=await createImageBitmap(f);$('preview').src=URL.createObjectURL(f);$('preview').hidden=false;$('run').disabled=false;$('status').textContent=`נטענה תמונה ${bitmap.width}×${bitmap.height}.`;};
-$('run').onclick=async()=>{if(!bitmap)return;$('prog').hidden=false;$('prog').value=4;$('status').textContent='מחשב Feature Registry v0.2…';await new Promise(r=>setTimeout(r,20));let t0=performance.now();
+$('run').onclick=async()=>{if(!bitmap)return;
+if(window.__PSLAB_INTEGRITY__!==true){$('status').textContent='נחסם: גרסת הממשק והמנוע אינה מאומתת.';return;}$('prog').hidden=false;$('prog').value=4;$('status').textContent='מחשב Feature Registry v0.2…';await new Promise(r=>setTimeout(r,20));let t0=performance.now();
 let maxSide=1536,sc=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height)),w=Math.max(32,Math.round(bitmap.width*sc)),h=Math.max(32,Math.round(bitmap.height*sc));
 let c=document.createElement('canvas');c.width=w;c.height=h;let ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(bitmap,0,0,w,h);let d=ctx.getImageData(0,0,w,h).data,n=w*h;
 let Y=new Float32Array(n),R=new Float32Array(n),G=new Float32Array(n),B=new Float32Array(n),hr=new Uint32Array(256),hg=new Uint32Array(256),hb=new Uint32Array(256),hy=new Uint32Array(256);
@@ -51,11 +53,23 @@ function residualAt(i){return Y[i]-(Y[i-1]+Y[i+1]+Y[i-w]+Y[i+w])/4}
 for(const off of [1,2,4]){let a=[],b=[];for(let y=5;y<h-5;y+=4)for(let x=5;x<w-5-off;x+=4){let i=y*w+x;a.push(residualAt(i));b.push(residualAt(i+off))}out[`NS.residual_corr_x${off}`]=corr(a,b)}
 let runtime=performance.now()-t0;$('prog').value=100;
 let gt={class:$('truth').value||null,source_id:$('sourceId').value.trim()||null,transformation:$('transform').value};
-lastResult={schema:"process-signature-lab/0.2",timestamp:new Date().toISOString(),ground_truth:gt,privacy:"local-only",runtime_ms:runtime,feature_count:Object.keys(out).length,features:out};
+lastResult={schema:SCHEMA_VERSION,ui_version:UI_VERSION,engine_version:ENGINE_VERSION,integrity_verified:true,timestamp:new Date().toISOString(),ground_truth:gt,privacy:"local-only",runtime_ms:runtime,feature_count:Object.keys(out).length,features:out};
 $('status').textContent='הניתוח הסתיים מקומית.';$('summary').hidden=false;$('families').hidden=false;$('results').hidden=false;$('export').disabled=false;
-$('summaryGrid').innerHTML=[['זמן חישוב',`${runtime.toFixed(0)} ms`],['מספר פיצ׳רים',Object.keys(out).length],['רזולוציית ניתוח',`${w}×${h}`],['Ground Truth',gt.class||'לא סומן'],['Transformation',gt.transformation],['פרטיות','Local only']].map(([a,b])=>`<div class="metric"><b>${a}</b><span>${b}</span></div>`).join('');
+$('summaryGrid').innerHTML=[['Engine',ENGINE_VERSION],['Integrity','VERIFIED'],['זמן חישוב',`${runtime.toFixed(0)} ms`],['מספר פיצ׳רים',Object.keys(out).length],['רזולוציית ניתוח',`${w}×${h}`],['Ground Truth',gt.class||'לא סומן'],['Transformation',gt.transformation],['פרטיות','Local only']].map(([a,b])=>`<div class="metric"><b>${a}</b><span>${b}</span></div>`).join('');
 let fam={};for(const k of Object.keys(out)){let f=k.split('.')[0];fam[f]=(fam[f]||0)+1}$('familyPills').innerHTML=Object.entries(fam).map(([k,v])=>`<span class="pill">${k}: ${v}</span>`).join('');
 $('metrics').innerHTML=Object.entries(out).map(([k,v])=>`<div class="metric"><b>${k}</b><span>${fmt(v)}</span></div>`).join('');$('raw').textContent=JSON.stringify(lastResult,null,2);
 };
 $('export').onclick=()=>{if(!lastResult)return;let b=new Blob([JSON.stringify(lastResult,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`pslab-v02-${Date.now()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+(async function bootIntegrity(){
+ const el=$('integrity');
+ try{
+   const r=await fetch('./version.json?cb='+Date.now(),{cache:'no-store'});
+   const v=await r.json();
+   const ok=v.ui===UI_VERSION && v.engine===ENGINE_VERSION && v.schema===SCHEMA_VERSION;
+   window.__PSLAB_INTEGRITY__=ok;
+   el.textContent=ok?`Version Integrity: VERIFIED — UI ${UI_VERSION} / Engine ${ENGINE_VERSION}`:
+     `VERSION MISMATCH — UI ${UI_VERSION} / Engine ${ENGINE_VERSION} / Manifest ${v.engine||'?'}`;
+   if(!ok){el.style.color='#b91c1c';$('run').disabled=true;}
+   if('serviceWorker'in navigator) await navigator.serviceWorker.register('./sw.js?v=0.2.1',{updateViaCache:'none'});
+ }catch(e){window.__PSLAB_INTEGRITY__=false;el.textContent='Version Integrity: FAILED — הניתוח חסום';el.style.color='#b91c1c';$('run').disabled=true;}
+})();

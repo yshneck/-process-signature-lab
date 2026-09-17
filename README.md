@@ -1,4 +1,4 @@
-# Process Signature Lab v0.2
+# Process Signature Lab v0.2.1
 Mobile-first deterministic research instrument.
 
 Changes from v0.1:
@@ -14,3 +14,14 @@ Changes from v0.1:
 Research requirement: v0.2 is an instrumentation expansion, not yet the final 180–250-feature registry.
 Before scaling the dataset, validate repeatability, runtime on iPhone, JSON export, and then add
 full FFT/DCT/CFA candidates plus mobile-vs-full-resolution equivalence tests.
+
+## v0.2.1 integrity hardening
+- Independent UI, engine and schema version identifiers.
+- `version.json` no-store integrity handshake before research runs.
+- Analysis is blocked on version mismatch or failed integrity verification.
+- JSON records UI version, engine version, schema version and integrity status.
+- Versioned JS/SW URLs and `updateViaCache: none`.
+- Service worker deletes obsolete caches and claims clients immediately.
+- Version/index checks use network-first/no-store behavior.
+
+Expected current registry count: 141 features.
