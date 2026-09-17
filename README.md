@@ -1,24 +1,16 @@
-# Process Signature Lab v0.1
+# Process Signature Lab v0.2
+Mobile-first deterministic research instrument.
 
-Mobile/Web-first research prototype for local image micro-forensics.
+Changes from v0.1:
+- Ground-truth research labels A/B/C/D, anonymous source id, transformation id.
+- Expanded feature registry: multiple residual filters and moments, luminance-conditioned noise,
+  spatial autocorrelation, multiscale/directional difference energy, color-channel coupling,
+  gradient/orientation, local entropy, patch heterogeneity, quantization proxies.
+- Expanded cross-feature dependency family X.
+- Runtime and feature-count instrumentation.
+- Ground truth is stored with the result but never used in feature extraction.
+- No AI/human classifier and no authenticity claim.
 
-## What it does
-- Runs in Safari/modern browsers.
-- Image pixels are processed locally; no upload endpoint exists.
-- Extracts deterministic micro-features from luminance, color, high-pass residuals, gradients,
-  spatial residual correlation, multi-distance frequency proxies, patch heterogeneity, and
-  cross-feature dependency measures.
-- Exports a JSON result for later dataset analysis.
-- Does NOT claim AI/Human classification in v0.1.
-
-## iPhone
-This is a static web app. Serve the folder over HTTPS (e.g. GitHub Pages), open it in Safari,
-then Share > Add to Home Screen. After the first successful load, the service worker caches
-the app shell for offline use. Selected image analysis remains on-device.
-
-## Research integrity
-Metadata/EXIF and filenames are not used as evidence. The analysis raster is bounded to 1536 px
-on its longest side to control mobile memory/runtime; the original dimensions are retained in
-the result. This is a deliberate mobile tier, not a replacement for the future full-resolution
-reference tier. The next milestone is to add the remainder of Feature Registry v0.1, unit/sanity
-tests, labeled batch collection, and full-vs-mobile equivalence tests before any classifier.
+Research requirement: v0.2 is an instrumentation expansion, not yet the final 180–250-feature registry.
+Before scaling the dataset, validate repeatability, runtime on iPhone, JSON export, and then add
+full FFT/DCT/CFA candidates plus mobile-vs-full-resolution equivalence tests.

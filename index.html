@@ -1,48 +1,46 @@
-<!doctype html>
-<html lang="he" dir="rtl">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<meta name="theme-color" content="#111827"/>
-<link rel="manifest" href="manifest.webmanifest"/>
-<title>Process Signature Lab v0.1</title>
+<!doctype html><html lang="he" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827"><link rel="manifest" href="manifest.webmanifest">
+<title>Process Signature Lab v0.2</title>
 <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#111827;background:#f3f4f6}
-body{margin:0}.wrap{max-width:900px;margin:auto;padding:18px}.card{background:white;border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 2px 12px #0001}
-h1{font-size:24px;margin:0 0 6px}h2{font-size:18px}.muted{color:#6b7280;font-size:14px}
-button,.filelabel,select,input{font:inherit}.filelabel,button{display:inline-block;border:0;border-radius:12px;padding:12px 16px;background:#111827;color:white;margin:4px;cursor:pointer}
-button.secondary{background:#e5e7eb;color:#111827}input[type=file]{display:none}
-img{max-width:100%;max-height:420px;border-radius:12px;display:block;margin:auto}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}.metric{background:#f9fafb;padding:10px;border-radius:12px}
-.metric b{display:block;font-size:12px;color:#6b7280}.metric span{font-variant-numeric:tabular-nums}
-progress{width:100%;height:16px}.ltr{direction:ltr;text-align:left}details{margin-top:10px}
-.warn{background:#fffbeb;border:1px solid #fde68a}.ok{background:#ecfdf5;border:1px solid #a7f3d0}
-</style>
-</head>
-<body><div class="wrap">
+body{margin:0}.wrap{max-width:920px;margin:auto;padding:16px}.card{background:#fff;border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 2px 12px #0001}
+h1{font-size:24px;margin:0 0 6px}h2{font-size:19px}.muted{color:#6b7280;font-size:14px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}
+.metric{background:#f9fafb;padding:10px;border-radius:12px;overflow:hidden}.metric b{display:block;font-size:12px;color:#6b7280;overflow-wrap:anywhere}.metric span{font-variant-numeric:tabular-nums}
+button,.filelabel,select,input{font:inherit}.filelabel,button{display:inline-block;border:0;border-radius:12px;padding:12px 15px;background:#111827;color:#fff;margin:4px;cursor:pointer}
+button.secondary{background:#e5e7eb;color:#111827}button:disabled{opacity:.45}input[type=file]{display:none}select,input[type=text]{box-sizing:border-box;width:100%;padding:11px;border:1px solid #d1d5db;border-radius:10px;background:#fff}
+label.field{display:block;margin:10px 0}label.field b{display:block;margin-bottom:5px}img{max-width:100%;max-height:380px;border-radius:12px;display:block;margin:auto}
+progress{width:100%;height:16px}.warn{background:#fffbeb;border:1px solid #fde68a}.ok{background:#ecfdf5;border:1px solid #a7f3d0}.ltr{direction:ltr;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}.pill{font-size:12px;padding:5px 8px;border-radius:999px;background:#eef2ff}
+</style></head><body><div class="wrap">
+<div class="card"><h1>Process Signature Lab v0.2</h1><div class="muted">Mobile Research Instrument — עיבוד מקומי בלבד. אין classifier ואין קביעה AI/אנושי.</div></div>
+
 <div class="card">
-<h1>Process Signature Lab <small>v0.1</small></h1>
-<div class="muted">מעבדת מחקר מקומית לתמונות. אין העלאה לשרת ואין כרגע קביעה "AI/אנושי".</div>
+<h2>1. Ground Truth</h2>
+<label class="field"><b>מקור ידוע</b><select id="truth">
+<option value="">בחר…</option><option value="A_CAMERA">A — Camera original</option>
+<option value="B_SYNTHETIC">B — Synthetic</option><option value="C_HUMANIZED_SYNTHETIC">C — Humanized synthetic</option>
+<option value="D_CAMERA_AI_EDIT">D — Camera + AI edit</option></select></label>
+<label class="field"><b>מזהה מקור אנונימי</b><input id="sourceId" type="text" placeholder="לדוגמה CAM01 / GEN03"></label>
+<label class="field"><b>Transformation</b><select id="transform">
+<option value="T0_ORIGINAL">T0 — Original</option><option value="T1_JPEG90">T1 — JPEG Q90</option>
+<option value="T2_JPEG70">T2 — JPEG Q70</option><option value="T3_JPEG50">T3 — JPEG Q50</option>
+<option value="T4_RESIZE">T4 — Resize</option><option value="T7_CROP">T7 — Crop</option>
+<option value="T8_BLUR">T8 — Blur</option><option value="T9_SHARPEN">T9 — Sharpen</option>
+<option value="T10_NOISE">T10 — Added noise</option><option value="T14_SCREENSHOT">T14 — Screenshot</option>
+<option value="T15_REENCODE">T15 — Re-encode chain</option><option value="OTHER">Other</option></select></label>
 </div>
+
 <div class="card">
+<h2>2. תמונה וניתוח</h2>
 <label class="filelabel">בחר תמונה מהאייפון<input id="file" type="file" accept="image/*"></label>
-<button class="secondary" id="run" disabled>הרץ ניתוח</button>
-<button class="secondary" id="export" disabled>ייצא תוצאה JSON</button>
-<p id="status" class="muted">ממתין לתמונה.</p>
-<progress id="prog" value="0" max="100" hidden></progress>
-<img id="preview" hidden/>
+<button class="secondary" id="run" disabled>הרץ v0.2</button><button class="secondary" id="export" disabled>ייצא JSON</button>
+<p id="status" class="muted">ממתין לתמונה.</p><progress id="prog" value="0" max="100" hidden></progress><img id="preview" hidden>
 </div>
-<div class="card warn">
-<b>מצב מחקר</b>
-<div class="muted">הגרסה מודדת micro-signals ותלויות ביניהם. היא אינה משתמשת ב-EXIF, בשם הקובץ או במודל AI. התוצאה אינה הוכחת אותנטיות.</div>
-</div>
-<div class="card" id="summary" hidden>
-<h2>סיכום הריצה</h2><div class="grid" id="summaryGrid"></div>
-</div>
-<div class="card" id="results" hidden>
-<h2>Feature Registry — מדידות בפועל</h2><div class="grid" id="metrics"></div>
-<details><summary>פלט מלא</summary><pre id="raw" class="ltr"></pre></details>
-</div>
-</div>
-<script src="app.js"></script>
-</body></html>
+
+<div class="card warn"><b>Research Guardrail</b><div class="muted">EXIF, שם הקובץ ומטאדאטה אינם משמשים כראיה. Ground Truth נשמר רק כתווית מחקר ואינו מוזן לחישובי הפיצ'רים.</div></div>
+
+<div class="card" id="summary" hidden><h2>סיכום הריצה</h2><div class="grid" id="summaryGrid"></div></div>
+<div class="card" id="families" hidden><h2>Feature families</h2><div class="tabs" id="familyPills"></div></div>
+<div class="card" id="results" hidden><h2>Feature Registry v0.2</h2><div class="grid" id="metrics"></div><details><summary>JSON מלא</summary><pre id="raw" class="ltr"></pre></details></div>
+</div><script src="app.js"></script></body></html>
